@@ -61,6 +61,8 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://dev-trusearch-engine.specbee.site" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://dev-trusearch-engine.specbee.site" />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&display=swap"
           rel="stylesheet"

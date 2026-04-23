@@ -42,7 +42,7 @@ export const trusearchOptions = {
       titleField: 'name',
       bodyField: 'shortDesc',
       urlField: (doc: any) => `/shop/${doc.slug}`,
-      includeFields: ['slug', 'pricing', 'categories', 'ratings', 'inventory', 'status', 'images'],
+      includeFields: ['slug', 'pricing', 'categories', 'ratings', 'inventory', 'status', 'images', 'imageUrl'],
       excludeFields: ['description', 'specs', 'variants'],
     },
     {

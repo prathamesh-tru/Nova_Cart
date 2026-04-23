@@ -27,12 +27,19 @@ const PANEL_ID = process.env.NEXT_PUBLIC_TRUSEARCH_AUTOCOMPLETE_PANEL_ID ?? ''
 const TS_API_URL = `${process.env.NEXT_PUBLIC_TRUSEARCH_ENGINE_URL ?? 'https://dev-trusearch-engine.specbee.site'}/api/v1/engine`
 const TS_API_KEY = process.env.NEXT_PUBLIC_TRUSEARCH_API_KEY ?? ''
 
-// ── TruSearch-powered inner panel ────────────────────────────────────────────
+// ── TruSearch panel — mounted ONCE on page load, never torn down ──────────────
+// This pre-warms the panel config + popular-searches fetch so the overlay is
+// instant when the user actually opens it.
 
 function TruSearchPanel({ onClose }: { onClose: () => void }) {
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const widgetRef = useRef<{ update: (o: Record<string, unknown>) => void; unmount: () => void } | undefined>(undefined)
+  // Keep latest callbacks in refs so the widget doesn't need to remount when they change
+  const onCloseRef = useRef(onClose)
+  const routerRef = useRef(router)
+  useEffect(() => { onCloseRef.current = onClose }, [onClose])
+  useEffect(() => { routerRef.current = router }, [router])
 
   useEffect(() => {
     const el = containerRef.current
@@ -47,15 +54,14 @@ function TruSearchPanel({ onClose }: { onClose: () => void }) {
         indexId: 'novacart',
         showSearchInput: true,
         inline: true,
-        open: true,
         onSubmit: (q: string) => {
-          onClose()
-          router.push(`/search?q=${encodeURIComponent(q)}`)
+          onCloseRef.current()
+          routerRef.current.push(`/search?q=${encodeURIComponent(q)}`)
         },
         onResultClick: (_id: string, url?: string) => {
-          if (url) { onClose(); router.push(url) }
+          if (url) { onCloseRef.current(); routerRef.current.push(url) }
         },
-        onClose,
+        onClose: () => onCloseRef.current(),
       }) as typeof widgetRef.current
     }
 
@@ -67,9 +73,8 @@ function TruSearchPanel({ onClose }: { onClose: () => void }) {
       }, 50)
       return () => clearInterval(t)
     }
-
-    return () => { widgetRef.current?.unmount() }
-  }, [onClose, router])
+    // No cleanup — we keep the widget mounted permanently for instant re-open
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div
@@ -231,39 +236,75 @@ function FallbackPanel({ onClose }: { onClose: () => void }) {
   )
 }
 
-// ── Shell (shared modal backdrop + animation) ─────────────────────────────────
+// ── Shell ─────────────────────────────────────────────────────────────────────
+// The TruSearch widget container lives OUTSIDE AnimatePresence so it is never
+// unmounted. Only the backdrop fades in/out. The widget panel slides and fades
+// via `animate` (not conditional rendering), keeping its internal state warm.
 
 export function SearchOverlay() {
   const { searchOpen, closeSearch } = useUiStore()
 
-  return (
-    <AnimatePresence>
-      {searchOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
-          onClick={closeSearch}
-        >
+  if (!PANEL_ID) {
+    // Fallback: simple conditional render is fine (no pre-warming needed)
+    return (
+      <AnimatePresence>
+        {searchOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className={`container mx-auto pt-16 ${PANEL_ID ? 'max-w-4xl' : 'max-w-2xl'}`}
-            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            onClick={closeSearch}
           >
-            {PANEL_ID ? (
-              <TruSearchPanel onClose={closeSearch} />
-            ) : (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+              className="container mx-auto pt-16 max-w-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="bg-background rounded-2xl shadow-2xl border overflow-hidden">
                 <FallbackPanel onClose={closeSearch} />
               </div>
-            )}
+            </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+    )
+  }
+
+  return (
+    <>
+      {/* Backdrop — animates in/out independently */}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            onClick={closeSearch}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Widget container — always in the DOM, slides/fades via `animate` */}
+      <div
+        className="fixed inset-0 z-50"
+        style={{ pointerEvents: searchOpen ? 'auto' : 'none' }}
+        aria-hidden={!searchOpen}
+      >
+        <motion.div
+          initial={false}
+          animate={{ opacity: searchOpen ? 1 : 0, y: searchOpen ? 0 : -20 }}
+          transition={{ duration: 0.2 }}
+          className="container mx-auto pt-16 max-w-4xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <TruSearchPanel onClose={closeSearch} />
         </motion.div>
-      )}
-    </AnimatePresence>
+      </div>
+    </>
   )
 }

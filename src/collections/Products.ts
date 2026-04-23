@@ -1,6 +1,19 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Payload } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import slugifyFn from 'slugify'
+
+async function resolveFirstImageUrl(doc: any, payload: Payload): Promise<string> {
+  const first = doc.images?.[0]?.image
+  if (!first) return ''
+  if (typeof first === 'object' && first?.url) return first.url as string
+  if (typeof first === 'number') {
+    try {
+      const media = await payload.findByID({ collection: 'media', id: first, depth: 0 })
+      return (media as any)?.url ?? ''
+    } catch { return '' }
+  }
+  return ''
+}
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -24,6 +37,21 @@ export const Products: CollectionConfig = {
           data.slug = slugifyFn(data.name, { lower: true, strict: true })
         }
         return data
+      },
+    ],
+    // Resolve the first image's media ID → URL so TruSearch can index and
+    // display it. Runs before the TruSearch afterChange hook (plugin appends
+    // its hooks after collection hooks), and also on afterRead so reindex works.
+    afterChange: [
+      async ({ doc, req }) => {
+        doc.imageUrl = await resolveFirstImageUrl(doc, req.payload)
+        return doc
+      },
+    ],
+    afterRead: [
+      async ({ doc, req }) => {
+        doc.imageUrl = await resolveFirstImageUrl(doc, req.payload)
+        return doc
       },
     ],
   },
