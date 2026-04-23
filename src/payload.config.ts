@@ -127,6 +127,20 @@ export default buildConfig({
           excludeFields: ['items'],
         },
         {
+          slug: 'brands',
+          titleField: 'name',
+          bodyField: 'description',
+          urlField: (doc) => `/shop?brand=${doc.slug}`,
+          includeFields: ['slug', 'description', 'logo'],
+        },
+        {
+          slug: 'colors',
+          titleField: 'name',
+          bodyField: 'name',
+          urlField: (doc) => `/shop?color=${doc.slug}`,
+          includeFields: ['slug', 'hex'],
+        },
+        {
           slug: 'media',
           titleField: 'alt',
           bodyField: 'alt',
