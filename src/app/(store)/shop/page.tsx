@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { SlidersHorizontal, X, ChevronDown } from 'lucide-react'
+import { SlidersHorizontal, X } from 'lucide-react'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { Breadcrumb } from '@/components/shared/Breadcrumb'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -20,7 +20,6 @@ interface SearchParams {
   page?: string
   q?: string
   brand?: string
-  color?: string
 }
 
 function getImageUrl(image: any): string {
@@ -60,28 +59,22 @@ async function getShopData(searchParams: SearchParams) {
   if (searchParams.brand) {
     where['brand.slug'] = { equals: searchParams.brand }
   }
-  if (searchParams.color) {
-    where['colors.slug'] = { equals: searchParams.color }
-  }
-
-  const [productsResult, categoriesResult, brandsResult, colorsResult] = await Promise.all([
+  const [productsResult, categoriesResult, brandsResult] = await Promise.all([
     payload.find({ collection: 'products', where, sort, page, limit, depth: 2 }).catch(() => ({ docs: [], totalDocs: 0, totalPages: 1, page: 1 })),
     payload.find({ collection: 'categories', limit: 50, depth: 0 }).catch(() => ({ docs: [] })),
     payload.find({ collection: 'brands', limit: 100, depth: 0 }).catch(() => ({ docs: [] })),
-    payload.find({ collection: 'colors', limit: 100, depth: 0 }).catch(() => ({ docs: [] })),
   ])
 
   return {
     productsResult,
     categories: categoriesResult.docs,
     brands: brandsResult.docs,
-    colors: colorsResult.docs,
   }
 }
 
 export default async function ShopPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const params = await searchParams
-  const { productsResult, categories, brands, colors } = await getShopData(params)
+  const { productsResult, categories, brands } = await getShopData(params)
 
   const products = productsResult.docs.map((p: any) => ({
     id: p.id,
@@ -99,7 +92,6 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
   const activeCategory = params.category ?? ''
   const activeSort = params.sort ?? 'newest'
   const activeBrand = params.brand ?? ''
-  const activeColor = params.color ?? ''
   const totalDocs = productsResult.totalDocs ?? 0
   const currentPage = productsResult.page ?? 1
   const totalPages = productsResult.totalPages ?? 1
@@ -109,7 +101,7 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
     ...categories.map((c: any) => ({ label: c.name, value: c.slug })),
   ]
 
-  const activeFilterCount = [activeCategory, activeBrand, activeColor, params.in_stock].filter(Boolean).length
+  const activeFilterCount = [activeCategory, activeBrand, params.in_stock].filter(Boolean).length
 
   function buildUrl(updates: Partial<SearchParams>) {
     const next = { ...params, ...updates }
@@ -215,30 +207,6 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
               )}
             </div>
 
-            {/* Colour */}
-            <div className="px-4 py-3 border-b">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Colour</p>
-              {colors.length === 0 ? (
-                <p className="text-xs text-muted-foreground italic">No colours added yet</p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {colors.map((c: any) => (
-                    <Link key={c.id} href={buildUrl({ color: activeColor === c.slug ? '' : c.slug, page: '1' })}>
-                      <div
-                        title={c.name}
-                        className={`h-7 w-7 rounded-full border-2 transition-all cursor-pointer ${
-                          activeColor === c.slug
-                            ? 'border-primary ring-2 ring-primary ring-offset-1 scale-110'
-                            : 'border-border hover:scale-110'
-                        }`}
-                        style={{ backgroundColor: c.hex }}
-                      />
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* In Stock */}
             <div className="px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Availability</p>
@@ -284,14 +252,7 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
                   </Badge>
                 </Link>
               )}
-              {activeColor && (
-                <Link href={buildUrl({ color: '', page: '1' })}>
-                  <Badge variant="secondary" className="gap-1 cursor-pointer">
-                    Colour: {colors.find((c: any) => c.slug === activeColor)?.name ?? activeColor} <X className="h-3 w-3" />
-                  </Badge>
-                </Link>
-              )}
-              {params.in_stock && (
+{params.in_stock && (
                 <Link href={buildUrl({ in_stock: '', page: '1' })}>
                   <Badge variant="secondary" className="gap-1 cursor-pointer">
                     In Stock <X className="h-3 w-3" />

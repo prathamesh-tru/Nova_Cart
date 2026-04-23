@@ -76,10 +76,8 @@ export interface Config {
     carts: Cart;
     reviews: Review;
     coupons: Coupon;
-    wishlists: Wishlist;
     posts: Post;
     notifications: Notification;
-    'shipping-zones': ShippingZone;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -96,10 +94,8 @@ export interface Config {
     carts: CartsSelect<false> | CartsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     coupons: CouponsSelect<false> | CouponsSelect<true>;
-    wishlists: WishlistsSelect<false> | WishlistsSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
-    'shipping-zones': ShippingZonesSelect<false> | ShippingZonesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -544,25 +540,6 @@ export interface Review {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "wishlists".
- */
-export interface Wishlist {
-  id: number;
-  user: number | User;
-  name?: string | null;
-  isPublic?: boolean | null;
-  items?:
-    | {
-        product?: (number | null) | Product;
-        addedAt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts".
  */
 export interface Post {
@@ -621,35 +598,6 @@ export interface Notification {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "shipping-zones".
- */
-export interface ShippingZone {
-  id: number;
-  name: string;
-  countries?:
-    | {
-        /**
-         * ISO 3166-1 alpha-2
-         */
-        country?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  rates?:
-    | {
-        name?: string | null;
-        price?: number | null;
-        minDays?: number | null;
-        maxDays?: number | null;
-        freeAbove?: number | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -696,20 +644,12 @@ export interface PayloadLockedDocument {
         value: number | Coupon;
       } | null)
     | ({
-        relationTo: 'wishlists';
-        value: number | Wishlist;
-      } | null)
-    | ({
         relationTo: 'posts';
         value: number | Post;
       } | null)
     | ({
         relationTo: 'notifications';
         value: number | Notification;
-      } | null)
-    | ({
-        relationTo: 'shipping-zones';
-        value: number | ShippingZone;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1110,24 +1050,6 @@ export interface CouponsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "wishlists_select".
- */
-export interface WishlistsSelect<T extends boolean = true> {
-  user?: T;
-  name?: T;
-  isPublic?: T;
-  items?:
-    | T
-    | {
-        product?: T;
-        addedAt?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -1169,31 +1091,6 @@ export interface NotificationsSelect<T extends boolean = true> {
   link?: T;
   createdAt?: T;
   updatedAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "shipping-zones_select".
- */
-export interface ShippingZonesSelect<T extends boolean = true> {
-  name?: T;
-  countries?:
-    | T
-    | {
-        country?: T;
-        id?: T;
-      };
-  rates?:
-    | T
-    | {
-        name?: T;
-        price?: T;
-        minDays?: T;
-        maxDays?: T;
-        freeAbove?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1516,10 +1413,8 @@ export interface TrusearchSetting {
         | 'carts'
         | 'reviews'
         | 'coupons'
-        | 'wishlists'
         | 'posts'
         | 'notifications'
-        | 'shipping-zones'
       )[]
     | null;
   /**
@@ -1537,10 +1432,8 @@ export interface TrusearchSetting {
           | 'carts'
           | 'reviews'
           | 'coupons'
-          | 'wishlists'
           | 'posts'
-          | 'notifications'
-          | 'shipping-zones';
+          | 'notifications';
         indexId?: string | null;
         titleField?: string | null;
         bodyField?: string | null;

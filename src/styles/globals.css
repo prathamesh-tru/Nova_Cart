@@ -46,6 +46,17 @@
   }
 }
 
+/* Force TruSearch widget to always render in light mode regardless of app theme */
+.tws-root {
+  color-scheme: light !important;
+  --tws-bg: #ffffff !important;
+  --tws-bg-accent: #f3f4f6 !important;
+  --tws-bg-hover: #f9fafb !important;
+  --tws-text: #111827 !important;
+  --tws-text-muted: #6b7280 !important;
+  --tws-border: #e5e7eb !important;
+}
+
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

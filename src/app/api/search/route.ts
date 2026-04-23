@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getPayload } from '@/lib/payload'
 
 function traceId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36)
+}
+
+async function resolveMediaUrls(mediaIds: number[]): Promise<Record<number, string>> {
+  if (!mediaIds.length) return {}
+  try {
+    const payload = await getPayload()
+    const result = await payload.find({
+      collection: 'media',
+      where: { id: { in: mediaIds } },
+      limit: mediaIds.length,
+      depth: 0,
+    })
+    return Object.fromEntries(result.docs.map((m: any) => [m.id, m.url ?? '']))
+  } catch {
+    return {}
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -9,6 +26,7 @@ export async function GET(req: NextRequest) {
   const q = searchParams.get('q')?.trim() ?? ''
   const limit = parseInt(searchParams.get('limit') ?? '10')
   const indexId = searchParams.get('index') ?? process.env.TRUSEARCH_INDEX_ID ?? 'novacart'
+  const entityType = searchParams.get('type') ?? ''
 
   if (!q) return NextResponse.json({ hits: [], total: 0 })
 
@@ -35,7 +53,8 @@ export async function GET(req: NextRequest) {
         command: 'search',
         contract_version: '1.0.0',
         trace_id: traceId(),
-        payload: { indexId, query: q, limit },
+        // Fetch more when filtering by entityType so we have enough after client-side filter
+        payload: { indexId, query: q, limit: entityType ? limit * 5 : limit },
       }),
     })
 
@@ -45,8 +64,43 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: data?.error ?? 'Search failed' }, { status: res.status })
     }
 
-    const hits = data?.data?.hits ?? data?.hits ?? []
-    const total = data?.data?.total ?? data?.total ?? hits.length
+    const allItems: any[] = data?.data?.items ?? data?.items ?? []
+    const total: number = data?.data?.queryAnalysis?.pagination?.totalHits ?? data?.data?.total ?? allItems.length
+
+    const items = entityType
+      ? allItems.filter((item: any) => (item.entityType ?? item.attributes?.entity_type) === entityType).slice(0, limit)
+      : allItems
+
+    // Collect all image media IDs from product results so we can resolve URLs in one query
+    const mediaIds = new Set<number>()
+    items.forEach((item: any) => {
+      const images: any[] = item.attributes?.fields?.images ?? []
+      images.forEach((img: any) => {
+        if (typeof img.image === 'number') mediaIds.add(img.image)
+      })
+    })
+    const mediaUrls = await resolveMediaUrls(Array.from(mediaIds))
+
+    const hits = items.map((item: any) => {
+      const images: any[] = item.attributes?.fields?.images ?? []
+      const firstImageId = images[0]?.image
+      const imageUrl = typeof firstImageId === 'number'
+        ? (mediaUrls[firstImageId] ?? '/placeholder.jpg')
+        : typeof firstImageId === 'object'
+          ? (firstImageId?.url ?? '/placeholder.jpg')
+          : '/placeholder.jpg'
+
+      return {
+        id: item.entityId ?? item.id,
+        entityType: item.entityType ?? item.attributes?.entity_type,
+        title: item.attributes?.title ?? '',
+        url: item.attributes?.url ?? '',
+        slug: item.attributes?.fields?.slug ?? '',
+        imageUrl,
+        fields: item.attributes?.fields ?? {},
+        score: item.score ?? 0,
+      }
+    })
 
     return NextResponse.json({ hits, total })
   } catch (err) {

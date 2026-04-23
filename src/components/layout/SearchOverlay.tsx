@@ -24,7 +24,7 @@ declare global {
 }
 
 const PANEL_ID = process.env.NEXT_PUBLIC_TRUSEARCH_AUTOCOMPLETE_PANEL_ID ?? ''
-const TS_API_URL = process.env.NEXT_PUBLIC_TRUSEARCH_ENGINE_URL ?? 'https://dev-trusearch-engine.specbee.site'
+const TS_API_URL = `${process.env.NEXT_PUBLIC_TRUSEARCH_ENGINE_URL ?? 'https://dev-trusearch-engine.specbee.site'}/api/v1/engine`
 const TS_API_KEY = process.env.NEXT_PUBLIC_TRUSEARCH_API_KEY ?? ''
 
 // ── TruSearch-powered inner panel ────────────────────────────────────────────
@@ -44,8 +44,10 @@ function TruSearchPanel({ onClose }: { onClose: () => void }) {
         id: PANEL_ID,
         apiUrl: TS_API_URL,
         apiKey: TS_API_KEY,
+        indexId: 'novacart',
         showSearchInput: true,
         inline: true,
+        open: true,
         onSubmit: (q: string) => {
           onClose()
           router.push(`/search?q=${encodeURIComponent(q)}`)
@@ -69,7 +71,29 @@ function TruSearchPanel({ onClose }: { onClose: () => void }) {
     return () => { widgetRef.current?.unmount() }
   }, [onClose, router])
 
-  return <div ref={containerRef} className="min-h-[200px]" />
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        position: 'relative',
+        width: '100%',
+        minHeight: '200px',
+        background: '#fff',
+        borderRadius: '16px',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+        overflow: 'hidden',
+        colorScheme: 'light',
+        '--tws-bg': '#ffffff',
+        '--tws-bg-accent': '#f3f4f6',
+        '--tws-bg-hover': '#f9fafb',
+        '--tws-text': '#111827',
+        '--tws-text-muted': '#6b7280',
+        '--tws-border': '#e5e7eb',
+        '--tws-primary': '#2563eb',
+        '--tws-primary-fg': '#ffffff',
+      } as React.CSSProperties}
+    />
+  )
 }
 
 // ── Fallback: Payload-based inner panel ──────────────────────────────────────
@@ -100,18 +124,20 @@ function FallbackPanel({ onClose }: { onClose: () => void }) {
     const t = setTimeout(async () => {
       setLoading(true)
       try {
-        const res = await fetch(`/api/products?where[name][contains]=${encodeURIComponent(query)}&where[status][equals]=active&limit=5`)
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=20&type=products`)
         if (res.ok) {
           const data = await res.json()
           setResults(
-            (data.docs ?? []).map((p: any) => ({
-              id: p.id, name: p.name, slug: p.slug, price: p.pricing?.price ?? 0,
-              image: p.images?.[0]?.image?.url ?? '/placeholder.jpg',
+            (data.hits ?? []).slice(0, 5).map((h: any) => ({
+              id: h.id,
+              name: h.title,
+              slug: h.slug ?? h.fields?.slug ?? '',
+              price: h.fields?.pricing?.price ?? 0,
+              image: h.imageUrl ?? '/placeholder.jpg',
             }))
           )
         }
       } finally { setLoading(false) }
-      fetch(`/api/search?q=${encodeURIComponent(query)}&limit=1`).catch(() => {})
     }, 300)
     return () => clearTimeout(t)
   }, [query])
@@ -225,16 +251,16 @@ export function SearchOverlay() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="container max-w-2xl mx-auto pt-24"
+            className={`container mx-auto pt-16 ${PANEL_ID ? 'max-w-4xl' : 'max-w-2xl'}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-background rounded-2xl shadow-2xl border overflow-hidden">
-              {PANEL_ID ? (
-                <TruSearchPanel onClose={closeSearch} />
-              ) : (
+            {PANEL_ID ? (
+              <TruSearchPanel onClose={closeSearch} />
+            ) : (
+              <div className="bg-background rounded-2xl shadow-2xl border overflow-hidden">
                 <FallbackPanel onClose={closeSearch} />
-              )}
-            </div>
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}
