@@ -182,41 +182,45 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
             </div>
 
             {/* Brand */}
-            {brands.length > 0 && (
-              <div className="px-4 py-3 border-b">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Brand</p>
-                <ul className="space-y-0.5">
-                  {brands.map((b: any) => (
-                    <li key={b.id}>
-                      <Link
-                        href={buildUrl({ brand: activeBrand === b.slug ? '' : b.slug, page: '1' })}
-                        className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-sm transition-colors ${
-                          activeBrand === b.slug
-                            ? 'bg-primary text-primary-foreground font-medium'
-                            : 'hover:bg-muted text-foreground'
+            <div className="px-4 py-3 border-b">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Brand</p>
+              {brands.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic">No brands added yet</p>
+              ) : (
+              <ul className="space-y-0.5">
+                {brands.map((b: any) => (
+                  <li key={b.id}>
+                    <Link
+                      href={buildUrl({ brand: activeBrand === b.slug ? '' : b.slug, page: '1' })}
+                      className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-sm transition-colors ${
+                        activeBrand === b.slug
+                          ? 'bg-primary text-primary-foreground font-medium'
+                          : 'hover:bg-muted text-foreground'
+                      }`}
+                    >
+                      <span
+                        className={`h-4 w-4 rounded border flex-shrink-0 flex items-center justify-center ${
+                          activeBrand === b.slug ? 'bg-primary-foreground/20 border-primary-foreground/40' : 'border-muted-foreground/30'
                         }`}
                       >
-                        <span
-                          className={`h-4 w-4 rounded border flex-shrink-0 flex items-center justify-center ${
-                            activeBrand === b.slug ? 'bg-primary-foreground/20 border-primary-foreground/40' : 'border-muted-foreground/30'
-                          }`}
-                        >
-                          {activeBrand === b.slug && (
-                            <span className="block h-2 w-2 rounded-sm bg-current" />
-                          )}
-                        </span>
-                        {b.name}
-                      </Link>
+                        {activeBrand === b.slug && (
+                          <span className="block h-2 w-2 rounded-sm bg-current" />
+                        )}
+                      </span>
+                      {b.name}
+                    </Link>
                     </li>
                   ))}
                 </ul>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Colour */}
-            {colors.length > 0 && (
-              <div className="px-4 py-3 border-b">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Colour</p>
+            <div className="px-4 py-3 border-b">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Colour</p>
+              {colors.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic">No colours added yet</p>
+              ) : (
                 <div className="flex flex-wrap gap-2">
                   {colors.map((c: any) => (
                     <Link key={c.id} href={buildUrl({ color: activeColor === c.slug ? '' : c.slug, page: '1' })}>
@@ -232,8 +236,8 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
                     </Link>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* In Stock */}
             <div className="px-4 py-3">
