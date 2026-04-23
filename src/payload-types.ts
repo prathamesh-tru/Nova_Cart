@@ -70,6 +70,8 @@ export interface Config {
     media: Media;
     products: Product;
     categories: Category;
+    brands: Brand;
+    colors: Color;
     orders: Order;
     carts: Cart;
     reviews: Review;
@@ -88,6 +90,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    brands: BrandsSelect<false> | BrandsSelect<true>;
+    colors: ColorsSelect<false> | ColorsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     carts: CartsSelect<false> | CartsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
@@ -264,6 +268,8 @@ export interface Product {
   shortDesc?: string | null;
   status: 'draft' | 'active' | 'archived';
   categories?: (number | Category)[] | null;
+  brand?: (number | null) | Brand;
+  colors?: (number | Color)[] | null;
   tags?:
     | {
         tag?: string | null;
@@ -372,6 +378,34 @@ export interface Category {
   parent?: (number | null) | Category;
   metaTitle?: string | null;
   metaDesc?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands".
+ */
+export interface Brand {
+  id: number;
+  name: string;
+  slug?: string | null;
+  logo?: (number | null) | Media;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "colors".
+ */
+export interface Color {
+  id: number;
+  name: string;
+  slug?: string | null;
+  /**
+   * Hex code shown as a colour swatch, e.g. #FF5733
+   */
+  hex: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -638,6 +672,14 @@ export interface PayloadLockedDocument {
         value: number | Category;
       } | null)
     | ({
+        relationTo: 'brands';
+        value: number | Brand;
+      } | null)
+    | ({
+        relationTo: 'colors';
+        value: number | Color;
+      } | null)
+    | ({
         relationTo: 'orders';
         value: number | Order;
       } | null)
@@ -810,6 +852,8 @@ export interface ProductsSelect<T extends boolean = true> {
   shortDesc?: T;
   status?: T;
   categories?: T;
+  brand?: T;
+  colors?: T;
   tags?:
     | T
     | {
@@ -909,6 +953,29 @@ export interface CategoriesSelect<T extends boolean = true> {
   parent?: T;
   metaTitle?: T;
   metaDesc?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands_select".
+ */
+export interface BrandsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  logo?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "colors_select".
+ */
+export interface ColorsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  hex?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1443,6 +1510,8 @@ export interface TrusearchSetting {
         | 'media'
         | 'products'
         | 'categories'
+        | 'brands'
+        | 'colors'
         | 'orders'
         | 'carts'
         | 'reviews'
@@ -1462,6 +1531,8 @@ export interface TrusearchSetting {
           | 'media'
           | 'products'
           | 'categories'
+          | 'brands'
+          | 'colors'
           | 'orders'
           | 'carts'
           | 'reviews'

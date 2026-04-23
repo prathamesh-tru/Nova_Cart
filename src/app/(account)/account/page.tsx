@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Package, Heart, Star, ArrowRight, ShoppingBag } from 'lucide-react'
+import { Package, Star, ArrowRight, ShoppingBag } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,8 +12,6 @@ import { formatPrice } from '@/lib/utils'
 export default function AccountPage() {
   const [user, setUser] = useState<any>(null)
   const [orders, setOrders] = useState<any[]>([])
-  const [wishlistCount, setWishlistCount] = useState(0)
-
   useEffect(() => {
     fetch('/api/users/me', { credentials: 'include' })
       .then(r => r.json())
@@ -23,14 +21,12 @@ export default function AccountPage() {
       .then(r => r.ok ? r.json() : { docs: [] })
       .then(d => setOrders(d.docs ?? []))
       .catch(() => {})
-    setWishlistCount(JSON.parse(localStorage.getItem('wishlist') ?? '[]').length)
   }, [])
 
   const stats = [
     { label: 'Total Orders', value: orders.length, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Total Spent', value: formatPrice(orders.reduce((s: number, o: any) => s + (o.total ?? 0), 0)), icon: ShoppingBag, color: 'text-purple-600', bg: 'bg-purple-50' },
     { label: 'Loyalty Points', value: `${user?.loyaltyPoints ?? 0} pts`, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Wishlist Items', value: wishlistCount, icon: Heart, color: 'text-red-500', bg: 'bg-red-50' },
   ]
 
   return (
@@ -44,7 +40,7 @@ export default function AccountPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {stats.map(({ label, value, icon: Icon, color, bg }, i) => (
           <motion.div key={label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
             <Card>

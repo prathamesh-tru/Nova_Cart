@@ -9,6 +9,8 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Products } from './collections/Products'
 import { Categories } from './collections/Categories'
+import { Brands } from './collections/Brands'
+import { Colors } from './collections/Colors'
 import { Orders } from './collections/Orders'
 import { Cart } from './collections/Cart'
 import { Reviews } from './collections/Reviews'
@@ -161,6 +163,8 @@ export default buildConfig({
     Media,
     Products,
     Categories,
+    Brands,
+    Colors,
     Orders,
     Cart,
     Reviews,

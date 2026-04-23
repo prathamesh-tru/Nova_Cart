@@ -3,7 +3,7 @@ import '@/styles/globals.css'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
-import { Package, User, Heart, MapPin, LayoutDashboard, ShoppingBag } from 'lucide-react'
+import { Package, User, LayoutDashboard, ShoppingBag } from 'lucide-react'
 import { Toaster } from 'sonner'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
@@ -18,9 +18,7 @@ export const metadata: Metadata = {
 const SIDEBAR_LINKS = [
   { label: 'Dashboard', href: '/account', icon: LayoutDashboard },
   { label: 'Orders', href: '/account/orders', icon: Package },
-  { label: 'Wishlist', href: '/account/wishlist', icon: Heart },
   { label: 'Profile', href: '/account/profile', icon: User },
-  { label: 'Addresses', href: '/account/addresses', icon: MapPin },
 ]
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {

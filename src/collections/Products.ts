@@ -68,6 +68,17 @@ export const Products: CollectionConfig = {
       hasMany: true,
     },
     {
+      name: 'brand',
+      type: 'relationship',
+      relationTo: 'brands',
+    },
+    {
+      name: 'colors',
+      type: 'relationship',
+      relationTo: 'colors',
+      hasMany: true,
+    },
+    {
       name: 'tags',
       type: 'array',
       fields: [{ name: 'tag', type: 'text' }],
