@@ -33,7 +33,7 @@
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
     "@tanstack/react-query": "^5.59.0",
-    "@trusearch/payload": "file:trusearch-payload-0.2.0.tgz",
+    "@trusearch/payload": "file:/home/prathamesh/Downloads/trusearch-payload-0.2.0 (2).tgz",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
