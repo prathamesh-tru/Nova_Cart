@@ -31,10 +31,6 @@ function stripHtml(str: string) {
   return str.replace(/<[^>]*>/g, '').trim()
 }
 
-// Cache panel section→entityType mapping so we can filter results correctly.
-// Populated when autocomplete_panel_get is called.
-const panelSectionEntityTypes: Record<string, string> = {}
-
 async function tsFetch(command: string, payload: Record<string, unknown>) {
   const res = await fetch(TS_API_URL, {
     method: 'POST',
@@ -46,30 +42,32 @@ async function tsFetch(command: string, payload: Record<string, unknown>) {
   if (json.status === 'error') throw new Error(json.error?.message ?? 'Unknown error')
   const data = json.data
 
-  // Cache section→entityType from panel config
-  if (command === 'autocomplete_panel_get' && Array.isArray(data?.sections)) {
-    for (const sec of data.sections as Array<{ key: string; entityType?: string }>) {
-      if (sec.key && sec.entityType) panelSectionEntityTypes[sec.key] = sec.entityType
+  if (command === 'federated_suggest') {
+    // Clean popular searches: strip HTML tags, filter URL fragments
+    if (data?.popularSearches) {
+      data.popularSearches = (data.popularSearches as Array<{ text: string }>)
+        .map((s) => ({ ...s, text: stripHtml(s.text) }))
+        .filter((s) => {
+          const t = s.text
+          return t.length > 1 && !t.includes('=') && !t.includes('/') && !t.includes('...')
+        })
     }
-  }
 
-  // Clean popular searches: strip HTML tags, filter URL fragments
-  if (command === 'federated_suggest' && data?.popularSearches) {
-    data.popularSearches = (data.popularSearches as Array<{ text: string }>)
-      .map((s) => ({ ...s, text: stripHtml(s.text) }))
-      .filter((s) => {
-        const t = s.text
-        return t.length > 1 && !t.includes('=') && !t.includes('/') && !t.includes('...')
-      })
-  }
+    // Build section→entityType map from the REQUEST payload's sections array
+    // (more reliable than caching from autocomplete_panel_get)
+    const reqSections = (payload.sections as Array<{ key: string; entityType?: string }> | undefined) ?? []
+    const sectionEntityTypes: Record<string, string> = {}
+    for (const s of reqSections) {
+      if (s.key && s.entityType) sectionEntityTypes[s.key] = s.entityType
+    }
 
-  // Enforce entity type per section — the panel's filterField doesn't always
-  // prevent wrong entity types from appearing in sections.
-  if (command === 'federated_suggest' && data?.sections) {
-    for (const [key, sec] of Object.entries(data.sections as Record<string, { items?: any[] }>)) {
-      const expectedType = panelSectionEntityTypes[key]
-      if (expectedType && Array.isArray(sec.items)) {
-        sec.items = sec.items.filter((item: any) => item.entityType === expectedType)
+    // Enforce correct entity type per section to prevent cross-contamination
+    if (data?.sections && Object.keys(sectionEntityTypes).length > 0) {
+      for (const [key, sec] of Object.entries(data.sections as Record<string, { items?: any[] }>)) {
+        const expectedType = sectionEntityTypes[key]
+        if (expectedType && Array.isArray(sec.items)) {
+          sec.items = sec.items.filter((item: any) => item.entityType === expectedType)
+        }
       }
     }
   }
