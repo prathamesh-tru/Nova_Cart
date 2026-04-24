@@ -53,8 +53,12 @@ export async function GET(req: NextRequest) {
         command: 'search',
         contract_version: '1.0.0',
         trace_id: traceId(),
-        // Fetch more when filtering by entityType so we have enough after client-side filter
-        payload: { indexId, query: q, limit: entityType ? limit * 5 : limit },
+        payload: {
+          indexId,
+          query: q,
+          limit: entityType ? limit * 5 : limit,
+          ...(entityType ? { entityTypes: [entityType] } : {}),
+        },
       }),
     })
 
@@ -65,11 +69,14 @@ export async function GET(req: NextRequest) {
     }
 
     const allItems: any[] = data?.data?.items ?? data?.items ?? []
-    const total: number = data?.data?.queryAnalysis?.pagination?.totalHits ?? data?.data?.total ?? allItems.length
+    const rawTotal: number = data?.data?.queryAnalysis?.pagination?.totalHits ?? data?.data?.total ?? allItems.length
 
     const items = entityType
       ? allItems.filter((item: any) => (item.entityType ?? item.attributes?.entity_type) === entityType).slice(0, limit)
       : allItems
+
+    // When filtering by entity type, the raw total includes all types; use filtered count instead
+    const total = entityType ? items.length : rawTotal
 
     // Collect all image media IDs from product results so we can resolve URLs in one query
     const mediaIds = new Set<number>()

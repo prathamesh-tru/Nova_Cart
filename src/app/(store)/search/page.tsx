@@ -11,7 +11,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 async function getTruSearchResults(q: string) {
   const base = process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:3000'
   try {
-    const res = await fetch(`${base}/api/search?q=${encodeURIComponent(q)}&limit=24`, { cache: 'no-store' })
+    const res = await fetch(`${base}/api/search?q=${encodeURIComponent(q)}&limit=24&type=products`, { cache: 'no-store' })
     if (!res.ok) return { hits: [], total: 0 }
     const data = await res.json()
     return { hits: data.hits ?? [], total: data.total ?? 0 }
@@ -57,7 +57,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <h1 className="text-3xl font-serif font-bold">
           {q ? `Search results for "${q}"` : 'Search'}
         </h1>
-        {q && <p className="text-muted-foreground mt-1">{total} result{total !== 1 ? 's' : ''} found</p>}
+        {q && <p className="text-muted-foreground mt-1">{products.length} result{products.length !== 1 ? 's' : ''} found</p>}
       </div>
 
       {products.length > 0 && (
