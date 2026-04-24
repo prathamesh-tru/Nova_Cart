@@ -79,12 +79,12 @@
   background: #ffffff !important;
 }
 
-/* Two-column grid — scrollable so long result lists don't overflow the panel */
+/* Two-column grid — fixed height so the panel stays compact */
 .tws-autocomplete-panel__grid {
   display: grid !important;
   grid-template-columns: 1fr 1.6fr !important;
   min-height: 200px;
-  max-height: calc(100vh - 180px) !important;
+  max-height: 380px !important;
   overflow-y: auto !important;
 }
 

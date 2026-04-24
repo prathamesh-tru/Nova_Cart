@@ -132,7 +132,7 @@ function TruSearchPanel({ onClose }: { onClose: () => void }) {
         position: 'relative',
         width: '100%',
         minHeight: '200px',
-        maxHeight: 'calc(100vh - 120px)',
+        maxHeight: '460px',
         background: '#fff',
         borderRadius: '16px',
         boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
