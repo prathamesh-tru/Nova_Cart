@@ -19,10 +19,12 @@ const TS_API_URL = `${process.env.NEXT_PUBLIC_TRUSEARCH_ENGINE_URL ?? 'https://d
 const TS_API_KEY = process.env.NEXT_PUBLIC_TRUSEARCH_API_KEY ?? ''
 
 async function fetchFn(command: string, payload: Record<string, unknown>) {
+  // Force correct indexId — widget config may point to a different index
+  const patchedPayload = { ...payload, indexId: 'novacart' }
   const res = await fetch(TS_API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Api-Key': TS_API_KEY },
-    body: JSON.stringify({ command, contractVersion: '1.0.0', payload }),
+    body: JSON.stringify({ command, contractVersion: '1.0.0', payload: patchedPayload }),
   })
   if (!res.ok) throw new Error(`TruSearch error: ${res.status}`)
   const json = await res.json()

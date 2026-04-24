@@ -36,10 +36,12 @@ function stripHtml(str: string) {
 const panelSectionEntityTypes: Record<string, string> = {}
 
 async function tsFetch(command: string, payload: Record<string, unknown>) {
+  // Force correct indexId — panel config may point to a different index
+  const patchedPayload = { ...payload, indexId: 'novacart' }
   const res = await fetch(TS_API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Api-Key': TS_API_KEY },
-    body: JSON.stringify({ command, contractVersion: '1.0.0', payload }),
+    body: JSON.stringify({ command, contractVersion: '1.0.0', payload: patchedPayload }),
   })
   if (!res.ok) throw new Error(`TruSearch API error: ${res.status}`)
   const json = await res.json()
