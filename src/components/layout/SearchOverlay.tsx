@@ -27,6 +27,56 @@ const PANEL_ID = process.env.NEXT_PUBLIC_TRUSEARCH_AUTOCOMPLETE_PANEL_ID ?? ''
 const TS_API_URL = `${process.env.NEXT_PUBLIC_TRUSEARCH_ENGINE_URL ?? 'https://dev-trusearch-engine.specbee.site'}/api/v1/engine`
 const TS_API_KEY = process.env.NEXT_PUBLIC_TRUSEARCH_API_KEY ?? ''
 
+function stripHtml(str: string) {
+  return str.replace(/<[^>]*>/g, '').trim()
+}
+
+// Cache panel section→entityType mapping so we can filter results correctly.
+// Populated when autocomplete_panel_get is called.
+const panelSectionEntityTypes: Record<string, string> = {}
+
+async function tsFetch(command: string, payload: Record<string, unknown>) {
+  const res = await fetch(TS_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Api-Key': TS_API_KEY },
+    body: JSON.stringify({ command, contractVersion: '1.0.0', payload }),
+  })
+  if (!res.ok) throw new Error(`TruSearch API error: ${res.status}`)
+  const json = await res.json()
+  if (json.status === 'error') throw new Error(json.error?.message ?? 'Unknown error')
+  const data = json.data
+
+  // Cache section→entityType from panel config
+  if (command === 'autocomplete_panel_get' && Array.isArray(data?.sections)) {
+    for (const sec of data.sections as Array<{ key: string; entityType?: string }>) {
+      if (sec.key && sec.entityType) panelSectionEntityTypes[sec.key] = sec.entityType
+    }
+  }
+
+  // Clean popular searches: strip HTML tags, filter URL fragments
+  if (command === 'federated_suggest' && data?.popularSearches) {
+    data.popularSearches = (data.popularSearches as Array<{ text: string }>)
+      .map((s) => ({ ...s, text: stripHtml(s.text) }))
+      .filter((s) => {
+        const t = s.text
+        return t.length > 1 && !t.includes('=') && !t.includes('/') && !t.includes('...')
+      })
+  }
+
+  // Enforce entity type per section — the panel's filterField doesn't always
+  // prevent wrong entity types from appearing in sections.
+  if (command === 'federated_suggest' && data?.sections) {
+    for (const [key, sec] of Object.entries(data.sections as Record<string, { items?: any[] }>)) {
+      const expectedType = panelSectionEntityTypes[key]
+      if (expectedType && Array.isArray(sec.items)) {
+        sec.items = sec.items.filter((item: any) => item.entityType === expectedType)
+      }
+    }
+  }
+
+  return data
+}
+
 // ── TruSearch panel — mounted ONCE on page load, never torn down ──────────────
 // This pre-warms the panel config + popular-searches fetch so the overlay is
 // instant when the user actually opens it.
@@ -54,6 +104,7 @@ function TruSearchPanel({ onClose }: { onClose: () => void }) {
         indexId: 'novacart',
         showSearchInput: true,
         inline: true,
+        fetchFn: tsFetch,
         onSubmit: (q: string) => {
           onCloseRef.current()
           routerRef.current.push(`/search?q=${encodeURIComponent(q)}`)
