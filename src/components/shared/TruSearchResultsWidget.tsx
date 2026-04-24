@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-const TS_API_URL = process.env.NEXT_PUBLIC_TRUSEARCH_ENGINE_URL ?? 'https://dev-trusearch-engine.specbee.site'
+const TS_API_URL = `${process.env.NEXT_PUBLIC_TRUSEARCH_ENGINE_URL ?? 'https://dev-trusearch-engine.specbee.site'}/api/v1/engine`
 const TS_API_KEY = process.env.NEXT_PUBLIC_TRUSEARCH_API_KEY ?? ''
 
 interface Props {
@@ -38,6 +38,7 @@ export function TruSearchResultsWidget({ widgetId, query }: Props) {
         id: widgetId,
         apiUrl: TS_API_URL,
         apiKey: TS_API_KEY,
+        indexId: 'novacart',
         query: query ?? '',
         onSearch: (q: string) => {
           router.push(`/search?q=${encodeURIComponent(q)}`, { scroll: false })
