@@ -46,15 +46,231 @@
   }
 }
 
-/* Force TruSearch widget to always render in light mode regardless of app theme */
+/* ── TruSearch autocomplete widget – custom theme ──────────────────────────── */
 .tws-root {
   color-scheme: light !important;
   --tws-bg: #ffffff !important;
-  --tws-bg-accent: #f3f4f6 !important;
-  --tws-bg-hover: #f9fafb !important;
+  --tws-bg-accent: #f9fafb !important;
+  --tws-bg-hover: #f5f5f5 !important;
   --tws-text: #111827 !important;
   --tws-text-muted: #6b7280 !important;
   --tws-border: #e5e7eb !important;
+  --tws-primary: #1b3a6b !important;
+  --tws-primary-fg: #ffffff !important;
+}
+
+/* Panel container */
+.tws-autocomplete-panel {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.13) !important;
+  overflow: hidden !important;
+  font-family: inherit !important;
+  --tws-ac-bg: #ffffff;
+  --tws-ac-header-color: #9ca3af;
+  --tws-ac-hover-bg: #f9fafb;
+}
+
+/* Search wrapper (the input row at top) */
+.tws-autocomplete-panel__search-wrapper {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  background: #ffffff !important;
+}
+
+/* Two-column grid */
+.tws-autocomplete-panel__grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1.6fr !important;
+  min-height: 200px;
+}
+
+/* Columns */
+.tws-autocomplete-panel__column {
+  padding: 8px 0 !important;
+  gap: 0 !important;
+}
+
+/* Left column gets a right border as separator */
+.tws-autocomplete-panel__column[data-column="1"] {
+  border-right: 1px solid #f0f0f0 !important;
+}
+
+/* Section wrapper */
+.tws-autocomplete-panel__section {
+  padding: 0 !important;
+}
+
+/* Section header title */
+.tws-autocomplete-panel__section-title {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.07em !important;
+  color: #9ca3af !important;
+  padding: 14px 18px 6px !important;
+  background: transparent !important;
+}
+
+/* ── Popular / Suggestion items ─────────────────────────────────────── */
+.tws-autocomplete-panel__list {
+  padding: 2px 0 !important;
+}
+
+.tws-autocomplete-panel__search-term {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 8px 18px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #111827 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  text-align: left !important;
+  transition: background 0.12s !important;
+}
+
+.tws-autocomplete-panel__search-term:hover,
+.tws-autocomplete-panel__search-term:focus {
+  background: #f5f5f5 !important;
+  color: #111827 !important;
+}
+
+/* Search icon inside suggestions */
+.tws-autocomplete-panel__search-term-icon {
+  flex-shrink: 0 !important;
+  color: #c2601a !important;
+  opacity: 1 !important;
+  width: 16px !important;
+  height: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.tws-autocomplete-panel__search-term-icon svg {
+  width: 14px !important;
+  height: 14px !important;
+  stroke: #c2601a !important;
+}
+
+/* Suggestion text */
+.tws-autocomplete-panel__search-term-text {
+  color: #1f2937 !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+/* ── Entity section items (categories, products) ────────────────────── */
+/* Category list items (text-only style) */
+.tws-autocomplete-panel__section--entity[data-entity-type="categories"]
+  .tws-autocomplete-panel__item {
+  padding: 8px 18px !important;
+  font-size: 14px !important;
+  color: #374151 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  display: block !important;
+  text-align: left !important;
+  width: 100% !important;
+}
+
+.tws-autocomplete-panel__section--entity[data-entity-type="categories"]
+  .tws-autocomplete-panel__item:hover {
+  background: #f5f5f5 !important;
+  color: #111827 !important;
+}
+
+.tws-autocomplete-panel__section--entity[data-entity-type="categories"]
+  .tws-autocomplete-panel__item-image {
+  display: none !important;
+}
+
+/* Product items – compact card style */
+.tws-autocomplete-panel__section--entity[data-entity-type="products"]
+  .tws-autocomplete-panel__item--compact {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 10px 18px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  transition: background 0.12s !important;
+  width: 100% !important;
+  text-align: left !important;
+}
+
+.tws-autocomplete-panel__section--entity[data-entity-type="products"]
+  .tws-autocomplete-panel__item--compact:hover {
+  background: #f9fafb !important;
+}
+
+/* Product image */
+.tws-autocomplete-panel__section--entity[data-entity-type="products"]
+  .tws-autocomplete-panel__item-image {
+  flex-shrink: 0 !important;
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  background: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.tws-autocomplete-panel__image--large {
+  width: 52px !important;
+  height: 52px !important;
+  object-fit: cover !important;
+  border-radius: 8px !important;
+}
+
+/* Product text content */
+.tws-autocomplete-panel__section--entity[data-entity-type="products"]
+  .tws-autocomplete-panel__item-content {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.tws-autocomplete-panel__section--entity[data-entity-type="products"]
+  .tws-autocomplete-panel__item-title {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #111827 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+}
+
+/* Highlight matched text in suggestions and titles */
+.tws-autocomplete-panel em,
+.tws-autocomplete-panel mark {
+  font-style: normal !important;
+  background: transparent !important;
+  color: #c2601a !important;
+  font-weight: 600 !important;
+}
+
+/* Close button */
+.tws-autocomplete-panel__close {
+  color: #9ca3af !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 4px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: color 0.12s !important;
+}
+
+.tws-autocomplete-panel__close:hover {
+  color: #374151 !important;
+  background: #f3f4f6 !important;
 }
 
 @layer utilities {
