@@ -132,11 +132,10 @@ function TruSearchPanel({ onClose }: { onClose: () => void }) {
         position: 'relative',
         width: '100%',
         minHeight: '200px',
-        maxHeight: '460px',
         background: '#fff',
         borderRadius: '16px',
         boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
-        overflow: 'auto',
+        overflow: 'hidden',
         colorScheme: 'light',
         '--tws-bg': '#ffffff',
         '--tws-bg-accent': '#f3f4f6',
@@ -341,7 +340,7 @@ export function SearchOverlay() {
 
       {/* Widget container — always in the DOM, slides/fades via `animate` */}
       <div
-        className="fixed inset-0 z-50 overflow-y-auto"
+        className="fixed inset-0 z-50"
         style={{ pointerEvents: searchOpen ? 'auto' : 'none' }}
         aria-hidden={!searchOpen}
       >

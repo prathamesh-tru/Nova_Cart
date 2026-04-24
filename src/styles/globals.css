@@ -65,7 +65,7 @@
   border: 1px solid #e5e7eb !important;
   border-radius: 14px !important;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.13) !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   font-family: inherit !important;
   --tws-ac-bg: #ffffff;
   --tws-ac-header-color: #9ca3af;
