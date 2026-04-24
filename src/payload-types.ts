@@ -1404,7 +1404,6 @@ export interface TrusearchSetting {
    */
   indexedCollections?:
     | (
-        | 'media'
         | 'products'
         | 'categories'
         | 'brands'
@@ -1423,7 +1422,6 @@ export interface TrusearchSetting {
   collectionOverrides?:
     | {
         slug:
-          | 'media'
           | 'products'
           | 'categories'
           | 'brands'

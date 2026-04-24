@@ -31,6 +31,10 @@ function stripHtml(str: string) {
   return str.replace(/<[^>]*>/g, '').trim()
 }
 
+// Cache section entityTypes from the panel config so federated_suggest
+// filtering doesn't depend on the widget re-sending them in the request.
+const panelSectionEntityTypes: Record<string, string> = {}
+
 async function tsFetch(command: string, payload: Record<string, unknown>) {
   const res = await fetch(TS_API_URL, {
     method: 'POST',
@@ -41,6 +45,14 @@ async function tsFetch(command: string, payload: Record<string, unknown>) {
   const json = await res.json()
   if (json.status === 'error') throw new Error(json.error?.message ?? 'Unknown error')
   const data = json.data
+
+  if (command === 'autocomplete_panel_get') {
+    // Cache entityType per section key from the panel config
+    const sections = (data?.sections as Array<{ key: string; entityType?: string }> | undefined) ?? []
+    for (const s of sections) {
+      if (s.key && s.entityType) panelSectionEntityTypes[s.key] = s.entityType
+    }
+  }
 
   if (command === 'federated_suggest') {
     // Clean popular searches: strip HTML tags, filter URL fragments
@@ -53,10 +65,9 @@ async function tsFetch(command: string, payload: Record<string, unknown>) {
         })
     }
 
-    // Build section→entityType map from the REQUEST payload's sections array
-    // (more reliable than caching from autocomplete_panel_get)
+    // Build section→entityType map: prefer cached panel config, fall back to request payload
     const reqSections = (payload.sections as Array<{ key: string; entityType?: string }> | undefined) ?? []
-    const sectionEntityTypes: Record<string, string> = {}
+    const sectionEntityTypes: Record<string, string> = { ...panelSectionEntityTypes }
     for (const s of reqSections) {
       if (s.key && s.entityType) sectionEntityTypes[s.key] = s.entityType
     }
