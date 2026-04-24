@@ -65,7 +65,7 @@
   border: 1px solid #e5e7eb !important;
   border-radius: 14px !important;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.13) !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   font-family: inherit !important;
   --tws-ac-bg: #ffffff;
   --tws-ac-header-color: #9ca3af;
@@ -79,11 +79,13 @@
   background: #ffffff !important;
 }
 
-/* Two-column grid */
+/* Two-column grid — scrollable so long result lists don't overflow the panel */
 .tws-autocomplete-panel__grid {
   display: grid !important;
   grid-template-columns: 1fr 1.6fr !important;
   min-height: 200px;
+  max-height: calc(100vh - 180px) !important;
+  overflow-y: auto !important;
 }
 
 /* Columns */
