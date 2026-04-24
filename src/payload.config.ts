@@ -111,15 +111,8 @@ export const trusearchOptions = {
       urlField: (doc: any) => `/shop?color=${doc.slug}`,
       includeFields: ['slug', 'hex'],
     },
-    {
-      slug: 'media',
-      titleField: 'alt',
-      bodyField: 'alt',
-      urlField: (doc: any) => (doc.url as string) ?? '',
-      includeFields: ['url', 'alt', 'mimeType', 'filename'],
-    },
   ],
-  excludeCollections: ['users'],
+  excludeCollections: ['users', 'media'],
   batch: { size: 50, flushIntervalMs: 2000 },
   settingsGlobal: { adminGroup: 'TruSearch' },
 }
